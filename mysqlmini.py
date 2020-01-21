@@ -82,8 +82,10 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
                 print()
         elif(tableno == 2):
             for attrs in table2_attr:
-                print("table2.",attrs,sep='',end=', ')
-            print()
+                if attrs == table2_attr[-1]:
+                    print("table2.",attrs,sep='',end='\n')
+                else:
+                    print("table2.",attrs,sep='',end=', ')
             for row in all_recs:
                 for at in row:
                     if at == row[-1]:
@@ -96,8 +98,10 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
             for attrs in table1_attr:
                 print("table1.",attrs,sep='',end=', ')
             for attrs in table2_attr:
-                print("table2.",attrs,sep='',end=', ')
-            print()
+                if attrs == table2_attr[-1]:
+                    print("table2.",attrs,sep='',end='\n')
+                else:
+                    print("table2.",attrs,sep='',end=', ')
             for row in all_recs:
                 for at in row:
                     if at == row[-1]:
@@ -105,6 +109,212 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
                     else:
                         print(at, end=', ')
                 print()
+
+    # Handling printing of specific attributes
+    else:
+        if(tableno == 1):
+            if aggr == 1:
+                attr = attrs_to_print[0]
+                print("SUM(table1.",table1_attr[attr],')', sep='')
+                attr_sum = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                print(attr_sum)
+            elif aggr == 2:
+                attr = attrs_to_print[0]
+                print("AVG(table1.",table1_attr[attr],')', sep='')
+                attr_sum = 0
+                i = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                    i += 1
+                print(attr_sum/i)
+            elif aggr == 3:
+                attr = attrs_to_print[0]
+                print("MAX(table1.",table1_attr[attr],')', sep='')
+                attr_max = -sys.maxsize -1
+                for row in all_recs:
+                    attr_max = max(attr_max, int(row[attr]))
+                print(attr_max)
+            elif aggr == 4:
+                attr = attrs_to_print[0]
+                print("MIN(table1.",table1_attr[attr],')', sep='')
+                attr_min = sys.maxsize
+                for row in all_recs:
+                    attr_min = min(attr_min, int(row[attr]))
+                print(attr_min)
+            elif aggr == 5:
+                attr = attrs_to_print[0]
+                print("DISTINCT(table1.",table1_attr[attr],')', sep='')
+                distinct_attrs = set()
+                for row in all_recs:
+                    distinct_attrs.add(int(row[attr]))
+                for el in distinct_attrs:
+                    print(el)
+            else:
+                for attrs in attrs_to_print:
+                    if attrs == attrs_to_print[-1]:
+                        print("table1.",table1_attr[int(attrs)],sep='',end='\n')
+                    else:
+                        print("table1.",table1_attr[int(attrs)],sep='',end=', ')
+
+                for row in all_recs:
+                    for attr in attrs_to_print:
+                        if attr == attrs_to_print[-1]:
+                            print(row[attr], sep='',end='\n')
+                        else:
+                            print(row[attr], sep='',end=', ')
+                
+
+        if(tableno == 2):
+            if aggr == 1:
+                attr = attrs_to_print[0] - 3
+                print("SUM(table2.",table2_attr[attr],')', sep='')
+                attr_sum = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                print(attr_sum)
+            elif aggr == 2:
+                attr = attrs_to_print[0] - 3
+                print("AVG(table2.",table2_attr[attr],')', sep='')
+                attr_sum = 0
+                i = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                    i += 1
+                print(attr_sum/i)
+            elif aggr == 3:
+                attr = attrs_to_print[0] - 3
+                print("MAX(table2.",table2_attr[attr],')', sep='')
+                attr_max = -sys.maxsize -1
+                for row in all_recs:
+                    attr_max = max(attr_max, int(row[attr]))
+                print(attr_max)
+            elif aggr == 4:
+                attr = attrs_to_print[0] - 3
+                print("MIN(table2.",table2_attr[attr],')', sep='')
+                attr_min = sys.maxsize
+                for row in all_recs:
+                    attr_min = min(attr_min, int(row[attr]))
+                print(attr_min)
+            elif aggr == 5:
+                attr = attrs_to_print[0] - 3
+                print("DISTINCT(table2.",table2_attr[attr],')', sep='')
+                distinct_attrs = set()
+                for row in all_recs:
+                    distinct_attrs.add(int(row[attr]))
+                for el in distinct_attrs:
+                    print(el)
+            else:
+                for attrs in attrs_to_print:
+                    attrs = attrs - 3
+                    if attrs == attrs_to_print[-1] - 3:
+                        print("table2.",table2_attr[int(attrs)],sep='',end='\n')
+                    else:
+                        print("table2.",table2_attr[int(attrs)],sep='',end=', ')
+
+                for row in all_recs:
+                    for attr in attrs_to_print:
+                        attr = attr - 3
+                        if attr == attrs_to_print[-1] - 3:
+                            print(row[attr], sep='',end='\n')
+                        else:
+                            print(row[attr], sep='',end=', ')
+
+        if(tableno == 3):
+            if aggr == 1:
+                attr = attrs_to_print[0]
+                if attr <=2:
+                    msg = "SUM(table1."
+                    tab = table1_attr[attr]
+                else:
+                    msg = "SUM(table2."
+                    tab = table2_attr[attr-3]
+                print(msg,tab,')', sep='')
+                attr_sum = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                print(attr_sum)
+            elif aggr == 2:
+                attr = attrs_to_print[0]
+                if attr <=2:
+                    msg = "AVG(table1."
+                    tab = table1_attr[attr]
+                else:
+                    msg = "AVG(table2."
+                    tab = table2_attr[attr-3]
+                print(msg,tab,')', sep='')
+                attr_sum = 0
+                i = 0
+                for row in all_recs:
+                    attr_sum += int(row[attr])
+                    i += 1
+                print(attr_sum/i)
+            elif aggr == 3:
+                attr = attrs_to_print[0]
+                if attr <=2:
+                    msg = "MAX(table1."
+                    tab = table1_attr[attr]
+                else:
+                    msg = "MAX(table2."
+                    tab = table2_attr[attr-3]
+                print(msg,tab,')', sep='')
+                attr_max = -sys.maxsize -1
+                for row in all_recs:
+                    attr_max = max(attr_max, int(row[attr]))
+                print(attr_max)
+            elif aggr == 4:
+                attr = attrs_to_print[0]
+                if attr <=2:
+                    msg = "MIN(table1."
+                    tab = table1_attr[attr]
+                else:
+                    msg = "MIN(table2."
+                    tab = table2_attr[attr-3]
+                print(msg,tab,')', sep='')
+                attr_min = sys.maxsize
+                for row in all_recs:
+                    attr_min = min(attr_min, int(row[attr]))
+                print(attr_min)
+            elif aggr == 5:
+                attr = attrs_to_print[0]
+                if attr <=2:
+                    msg = "DISTINCT(table1."
+                    tab = table1_attr[attr]
+                else:
+                    msg = "DISTINCT(table2."
+                    tab = table2_attr[attr-3]
+                print(msg,tab,')', sep='')
+                distinct_attrs = set()
+                for row in all_recs:
+                    distinct_attrs.add(int(row[attr]))
+                for el in distinct_attrs:
+                    print(el)
+
+            else:
+                for attrs in attrs_to_print:
+                    if attrs > 2:
+                        continue
+                    if attrs == attrs_to_print[-1]:
+                        print("table1.",table1_attr[int(attrs)],sep='',end='\n')
+                    else:
+                        print("table1.",table1_attr[int(attrs)],sep='',end=', ')
+                for attrs in attrs_to_print:
+                    if attrs < 3:
+                        continue
+                    attrs = attrs - 3
+                    if attrs == attrs_to_print[-1] - 3:
+                        print("table2.",table2_attr[int(attrs)],sep='',end='\n')
+                    else:
+                        print("table2.",table2_attr[int(attrs)],sep='',end=', ')
+
+                for row in all_recs:
+                    for attr in attrs_to_print:
+                        if attr == attrs_to_print[-1]:
+                            print(row[attr], sep='',end='\n')
+                        else:
+                            print(row[attr], sep='',end=', ')
+
 
 
 
@@ -122,14 +332,24 @@ def Process_Query(attrs, tables, conditions, table1_attr, table1_recs, table2_at
         else:
             if 'SUM' in attrs[0].upper():
                 aggr = 1
+                ats = attrs[0].split('(')
+                attrs_to_print.append(data_dict[ats[1][0:-1]])
             elif 'AVG' in attrs[0].upper():
                 aggr = 2
+                ats = attrs[0].split('(')
+                attrs_to_print.append(data_dict[ats[1][0:-1]])
             elif 'MAX' in attrs[0].upper():
                 aggr = 3
+                ats = attrs[0].split('(')
+                attrs_to_print.append(data_dict[ats[1][0:-1]])
             elif 'MIN' in attrs[0].upper():
                 aggr = 4
+                ats = attrs[0].split('(')
+                attrs_to_print.append(data_dict[ats[1][0:-1]])
             elif 'DISTINCT' in attrs[0].upper():
                 aggr = 5
+                ats = attrs[0].split('(')
+                attrs_to_print.append(data_dict[ats[1][0:-1]])
             elif attrs[0] not in data_dict:
                 print("Error! Attribute not present in Table...")
                 return
@@ -137,16 +357,14 @@ def Process_Query(attrs, tables, conditions, table1_attr, table1_recs, table2_at
                 attrs_to_print.append(data_dict[attrs[0]])
     else:
         for attr in attrs:
+            print(attr)
             if attr not in data_dict:
-                print("Error! Attribute not present in Table...")
+                print("Error! Attribute \"", attr, "\" not present in Table...")
                 return
             else:
                 attrs_to_print.append(data_dict[attr])
 
     
-    if len(conditions)!=0:
-        Parse_Conditions(conditions)
-
     # Handling the case with Cartesian product
     if len(tables)==2:
         all_tables = True
@@ -173,6 +391,11 @@ def Process_Query(attrs, tables, conditions, table1_attr, table1_recs, table2_at
     else:
         print("Error! Table specified in query not found in Database...")
         return
+
+    # Handling conditions in query
+    if len(conditions)!=0:
+        Parse_Conditions(conditions)
+        # TODO: Modify records to be printed based on condition
     
     Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_attr)
 
@@ -203,7 +426,8 @@ def Parse_Query(q, table1_attr, table1_recs, table2_attr, table2_recs):
             break
         attrs.extend(att.split(','))
 
-    #Removing empty attributes
+
+    # Removing empty attributes
     i = 0
     for att in attrs:
         if(len(attrs[i])==0):
@@ -238,6 +462,19 @@ def Parse_Query(q, table1_attr, table1_recs, table2_attr, table2_recs):
     if len(tables) > 2:
         print("Error! Too many tables in query...")
 
+    # Creating uniform attribute names
+    for i in range (0,len(attrs)):
+        if attrs[i].upper()=='A': # and (tables[0].upper():
+            attrs[i] = "table1.A"
+        elif attrs[i].upper()=='C': # and tables[0].upper()=='TABLE1'):
+            attrs[i] = "table1.C"
+        elif attrs[i].upper()=='D': # and tables[0].upper()=='TABLE2'):
+            attrs[i] = "table2.D"
+        elif attrs[i].upper()=='B'  and tables[0].upper()=='TABLE1':
+            attrs[i] = "table1.B"
+        elif attrs[i].upper()=='B'  and tables[0].upper()=='TABLE2':
+            attrs[i] = "table2.B"
+
     # Getting the conditions
     conditions = []
     strt = prse + 1
@@ -271,9 +508,13 @@ if __name__ == "__main__":
     for attr in table1_attr:
         at = "table1." + attr
         data_dict[at] = idx
+        at = "TABLE1." + attr
+        data_dict[at] = idx
         idx += 1
     for attr in table2_attr:
         at = "table2." + attr
+        data_dict[at] = idx
+        at = "TABLE2." + attr
         data_dict[at] = idx
         idx += 1
 
