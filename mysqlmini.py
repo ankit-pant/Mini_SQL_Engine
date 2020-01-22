@@ -1,8 +1,19 @@
+
+'''
+    Mini Sql Engine
+    By: Ankit Pant
+'''
+
 import sqlparse
 import csv
 import sys
 
 data_dict = { }
+nj_cond = False
+nj_cond2 = False
+nj_cond3 = False
+nj_cond4 = False
+
 
 # Get metadata/schema of the tables
 def GetSchema():
@@ -52,11 +63,828 @@ def GetRecords(table_name):
 
 
 
-def Parse_Conditions(conditions):
+def Parse_Conditions(conditions, all_recs, tableno):
     '''
     This method parses conditions to be applied in the query
     '''
-    pass
+    rel_oprs = ['<', '>', "=", '<=', '>=']
+    first_cond = ''
+    second_cond = ''
+    compounder = ''
+    conditions_len = len(conditions)
+
+    # Compound Condition
+    if conditions_len == 3:
+        first_cond = conditions[0]
+        compounder = conditions[1]
+        second_cond = conditions[2]
+        
+        # parsing first condition
+        attr_name1 = ''
+        opr1 = ''
+        val1 = ''
+        i = 0
+        for ch in first_cond:
+            if ch in rel_oprs:
+                break
+            attr_name1 += ch
+            i +=1
+        opr1 = first_cond[i]
+        i += 1
+        if first_cond[i] in rel_oprs:
+            opr1 += first_cond[i]
+            i += 1
+        for j in range (i,len(first_cond)):
+            val1 += first_cond[j]
+
+        if len(attr_name1) == 1:
+            if attr_name1.upper() =='A':
+                attr_name1 = 'table1.A'
+            if attr_name1.upper() =='C':
+                attr_name1 = 'table1.C'
+            if attr_name1.upper() =='D':
+                attr_name1 = 'table2.D'
+            if attr_name1.upper() =='B' and tableno == 1:
+                attr_name1 = 'table1.B'
+            if attr_name1.upper() =='B' and tableno == 2:
+                attr_name1 = 'table2.B'
+
+        # parsing second condition
+        attr_name2 = ''
+        opr2 = ''
+        val2 = ''
+        i = 0
+        for ch in second_cond:
+            if ch in rel_oprs:
+                break
+            attr_name2 += ch
+            i +=1
+        opr2 = second_cond[i]
+        i += 1
+        if second_cond[i] in rel_oprs:
+            opr2 += second_cond[i]
+            i += 1
+        for j in range (i,len(second_cond)):
+            val2 += second_cond[j]
+
+        if len(attr_name2) == 1:
+            if attr_name2.upper() =='A':
+                attr_name2 = 'table1.A'
+            if attr_name2.upper() =='C':
+                attr_name2 = 'table1.C'
+            if attr_name2.upper() =='D':
+                attr_name2 = 'table2.D'
+            if attr_name2.upper() =='B' and tableno == 1:
+                attr_name2 = 'table1.B'
+            if attr_name2.upper() =='B' and tableno == 2:
+                attr_name2 = 'table2.B'
+
+        # Cases for single table or join
+        all_records = []
+        for rec in all_recs:
+            all_records.append(rec)
+
+        
+
+        if tableno == 1:
+            limited_attr1 = data_dict[attr_name1]
+            limited_attr2 = data_dict[attr_name2]
+
+            # limiting by opr1
+            if opr1 == '<':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) < int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+        
+            elif opr1 == '>':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) > int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) == int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '<=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) <= int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '>=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) >= int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+
+            else:
+                print("Operator not supported!")
+                all_recs = []
+                return all_recs
+
+            # limiting by opr2 for AND
+            if compounder.upper() == "AND":
+                if opr2 == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) < int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+            
+                elif opr2 == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) > int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) == int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) <= int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) >= int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+            
+            elif compounder.upper() == "OR":
+                if opr2 == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) < int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+            
+                elif opr2 == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) > int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) == int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) <= int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) >= int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+                
+            else:
+                print("Compound Contition of type", compounder,"not supported!")
+                all_recs = []
+                return all_recs
+
+
+
+
+        elif tableno == 2:
+            limited_attr1 = data_dict[attr_name1] - 3
+            limited_attr2 = data_dict[attr_name2] - 3
+
+            # limiting by opr1
+            if opr1 == '<':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) < int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+        
+            elif opr1 == '>':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) > int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) == int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '<=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) <= int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr1 == '>=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) >= int(val1):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+
+            else:
+                print("Operator not supported!")
+                all_recs = []
+                return all_recs
+
+            # limiting by opr2 for AND
+            if compounder.upper() == "AND":
+                if opr2 == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) < int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+            
+                elif opr2 == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) > int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) == int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) <= int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr2 == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr2]) >= int(val2):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+            
+            elif compounder.upper() == "OR":
+                if opr2 == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) < int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+            
+                elif opr2 == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) > int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) == int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) <= int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+                
+                elif opr2 == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_records)):
+                        if int(all_records[itr][limited_attr2]) >= int(val2):
+                            lim_attr.append(all_records[itr])
+                    for lattr in lim_attr:
+                        if lattr not in all_recs:
+                            all_recs.append(lattr)
+
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+                
+            else:
+                print("Compound Contition of type", compounder,"not supported!")
+                all_recs = []
+                return all_recs
+
+        elif tableno == 3:
+            if val1 in data_dict:
+                limited_attr1 = data_dict[attr_name1]
+                limited_attr2 = data_dict[val1]
+
+                # Natural Join Condition
+                if limited_attr1 == limited_attr2 - 2:
+                    lim_attr = []
+                    for itr in range(0,len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                            temp = all_recs[itr]
+                            del temp[limited_attr2]
+                            lim_attr.append(temp)
+                    all_recs = lim_attr
+                    global nj_cond
+                    nj_cond = True
+                
+                # Limiting by operator
+                else:
+                    if opr1 == '<':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) < int(all_recs[itr][limited_attr2]):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    elif opr1 == '>':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) > int(all_recs[itr][limited_attr2]):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    elif opr1 == '=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    elif opr1 == '<=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) <= int(all_recs[itr][limited_attr2]):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    elif opr1 == '>=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) >= int(all_recs[itr][limited_attr2]):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    else:
+                        print("Operator not supported!")
+                        all_recs = []
+                        return all_recs
+
+            else:
+                limited_attr1 = data_dict[attr_name1]
+                if opr1 == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) < int(val1):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+        
+                elif opr1 == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) > int(val1):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr1 == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) == int(val1):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr1 == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) <= int(val1):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                
+                elif opr1 == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) >= int(val1):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+            
+            # limiting by opr2 from AND
+            if compounder.upper() == "AND":
+                if val2 in data_dict:
+                    limited_attr1 = data_dict[attr_name2]
+                    limited_attr2 = data_dict[val2]
+                    # Natural Join Condition
+                    if limited_attr1 == limited_attr2 - 2:
+                        lim_attr = []
+                        for itr in range(0,len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                                temp = all_recs[itr]
+                                del temp[limited_attr2]
+                                lim_attr.append(temp)
+                        all_recs = lim_attr
+                        global nj_cond2
+                        nj_cond2 = True
+                    
+                    # Limiting by operator
+                    else:
+                        if opr2 == '<':
+                            lim_attr = []
+                            for itr in  range(0, len(all_recs)):
+                                if int(all_recs[itr][limited_attr1]) < int(all_recs[itr][limited_attr2]):
+                                    lim_attr.append(all_recs[itr])
+                            all_recs = lim_attr
+                        elif opr2 == '>':
+                            lim_attr = []
+                            for itr in  range(0, len(all_recs)):
+                                if int(all_recs[itr][limited_attr1]) > int(all_recs[itr][limited_attr2]):
+                                    lim_attr.append(all_recs[itr])
+                            all_recs = lim_attr
+                        elif opr2 == '=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_recs)):
+                                if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                                    lim_attr.append(all_recs[itr])
+                            all_recs = lim_attr
+                        elif opr2 == '<=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_recs)):
+                                if int(all_recs[itr][limited_attr1]) <= int(all_recs[itr][limited_attr2]):
+                                    lim_attr.append(all_recs[itr])
+                            all_recs = lim_attr
+                        elif opr2 == '>=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_recs)):
+                                if int(all_recs[itr][limited_attr1]) >= int(all_recs[itr][limited_attr2]):
+                                    lim_attr.append(all_recs[itr])
+                            all_recs = lim_attr
+                        else:
+                            print("Operator not supported!")
+                            all_recs = []
+                            return all_recs
+
+                else:
+                    limited_attr1 = data_dict[attr_name2]
+                    if opr2 == '<':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) < int(val2):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+            
+                    elif opr2 == '>':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) > int(val2):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    
+                    elif opr2 == '=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) == int(val2):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    
+                    elif opr2 == '<=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) <= int(val2):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+                    
+                    elif opr2 == '>=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_recs[itr][limited_attr1]) >= int(val2):
+                                lim_attr.append(all_recs[itr])
+                        all_recs = lim_attr
+
+                    else:
+                        print("Operator not supported!")
+                        all_recs = []
+                        return all_recs
+
+            elif compounder.upper() == "OR":
+                if val2 in data_dict:
+                    limited_attr1 = data_dict[attr_name2]
+                    limited_attr2 = data_dict[val2]
+
+                    # Natural Join Condition
+                    if limited_attr1 == limited_attr2 - 2:
+                        lim_attr = []
+                        for itr in range(0,len(all_records)):
+                            if int(all_records[itr][limited_attr1]) == int(all_records[itr][limited_attr2]):
+                                temp = all_records[itr]
+                                del temp[limited_attr2]
+                                lim_attr.append(temp)
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+                        global nj_cond3
+                        nj_cond3 = True
+                    
+                    # Limiting by operator
+                    else:
+                        if opr2 == '<':
+                            lim_attr = []
+                            for itr in  range(0, len(all_records)):
+                                if int(all_records[itr][limited_attr1]) < int(all_records[itr][limited_attr2]):
+                                    lim_attr.append(all_records[itr])
+                            for lattr in lim_attr:
+                                if lattr not in all_recs:
+                                    all_recs.append(lattr)
+                        elif opr2 == '>':
+                            lim_attr = []
+                            for itr in  range(0, len(all_records)):
+                                if int(all_records[itr][limited_attr1]) > int(all_records[itr][limited_attr2]):
+                                    lim_attr.append(all_records[itr])
+                            for lattr in lim_attr:
+                                if lattr not in all_recs:
+                                    all_recs.append(lattr)
+                        elif opr2 == '=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_records)):
+                                if int(all_records[itr][limited_attr1]) == int(all_records[itr][limited_attr2]):
+                                    lim_attr.append(all_records[itr])
+                            for lattr in lim_attr:
+                                if lattr not in all_recs:
+                                    all_recs.append(lattr)
+                        elif opr2 == '<=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_records)):
+                                if int(all_records[itr][limited_attr1]) <= int(all_records[itr][limited_attr2]):
+                                    lim_attr.append(all_records[itr])
+                            for lattr in lim_attr:
+                                if lattr not in all_recs:
+                                    all_recs.append(lattr)
+                        elif opr2 == '>=':
+                            lim_attr = []
+                            for itr in  range(0, len(all_records)):
+                                if int(all_records[itr][limited_attr1]) >= int(all_records[itr][limited_attr2]):
+                                    lim_attr.append(all_records[itr])
+                            for lattr in lim_attr:
+                                if lattr not in all_recs:
+                                    all_recs.append(lattr)
+                        else:
+                            print("Operator not supported!")
+                            all_recs = []
+                            return all_recs
+
+                else:
+                    limited_attr1 = data_dict[attr_name2]
+                    if opr2 == '<':
+                        lim_attr = []
+                        for itr in  range(0, len(all_records)):
+                            if int(all_records[itr][limited_attr1]) < int(val2):
+                                lim_attr.append(all_records[itr])
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+            
+                    elif opr2 == '>':
+                        lim_attr = []
+                        for itr in  range(0, len(all_records)):
+                            if int(all_records[itr][limited_attr1]) > int(val2):
+                                lim_attr.append(all_records[itr])
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+                    
+                    elif opr2 == '=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_records[itr][limited_attr1]) == int(val2):
+                                lim_attr.append(all_records[itr])
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+                    
+                    elif opr2 == '<=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_records[itr][limited_attr1]) <= int(val2):
+                                lim_attr.append(all_records[itr])
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+                    
+                    elif opr2 == '>=':
+                        lim_attr = []
+                        for itr in  range(0, len(all_recs)):
+                            if int(all_records[itr][limited_attr1]) >= int(val2):
+                                lim_attr.append(all_records[itr])
+                        for lattr in lim_attr:
+                            if lattr not in all_recs:
+                                all_recs.append(lattr)
+
+                    else:
+                        print("Operator not supported!")
+                        all_recs = []
+                        return all_recs
+
+
+
+    # Simple Condition
+    else:
+        first_cond = conditions[0]
+
+        # parsing first condition
+        attr_name = ''
+        opr = ''
+        val = ''
+        i = 0
+        for ch in first_cond:
+            if ch in rel_oprs:
+                break
+            attr_name += ch
+            i +=1
+        opr = first_cond[i]
+        i += 1
+        if first_cond[i] in rel_oprs:
+            opr += first_cond[i]
+            i += 1
+        for j in range (i,len(first_cond)):
+            val += first_cond[j]
+
+
+        if len(attr_name) == 1:
+            if attr_name.upper() =='A':
+                attr_name = 'table1.A'
+            if attr_name.upper() =='C':
+                attr_name = 'table1.C'
+            if attr_name.upper() =='D':
+                attr_name = 'table2.D'
+            if attr_name.upper() =='B' and tableno == 1:
+                attr_name = 'table1.B'
+            if attr_name.upper() =='B' and tableno == 2:
+                attr_name = 'table2.B'
+        
+        # Condition on attribute
+        if val in data_dict:
+            limited_attr1 = data_dict[attr_name]
+            limited_attr2 = data_dict[val]
+
+            # Natural Join Condition
+            if limited_attr1 == limited_attr2 - 2:
+                lim_attr = []
+                for itr in range(0,len(all_recs)):
+                    if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                        temp = all_recs[itr]
+                        del temp[limited_attr2]
+                        lim_attr.append(temp)
+                all_recs = lim_attr
+                global nj_cond4
+                nj_cond4 = True
+            
+            # Limiting by operator
+            else:
+                if opr == '<':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) < int(all_recs[itr][limited_attr2]):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                elif opr == '>':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) > int(all_recs[itr][limited_attr2]):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                elif opr == '=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) == int(all_recs[itr][limited_attr2]):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                elif opr == '<=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) <= int(all_recs[itr][limited_attr2]):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                elif opr == '>=':
+                    lim_attr = []
+                    for itr in  range(0, len(all_recs)):
+                        if int(all_recs[itr][limited_attr1]) >= int(all_recs[itr][limited_attr2]):
+                            lim_attr.append(all_recs[itr])
+                    all_recs = lim_attr
+                else:
+                    print("Operator not supported!")
+                    all_recs = []
+                    return all_recs
+
+            
+        # No join conditions
+        else:
+
+            limited_attr = data_dict[attr_name]
+            if (tableno==2):
+                limited_attr -= 3
+
+            # limiting by opr
+            if opr == '<':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr]) < int(val):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr == '>':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr]) > int(val):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr == '=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr]) == int(val):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr == '<=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr]) <= int(val):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+            
+            elif opr == '>=':
+                lim_attr = []
+                for itr in  range(0, len(all_recs)):
+                    if int(all_recs[itr][limited_attr]) >= int(val):
+                        lim_attr.append(all_recs[itr])
+                all_recs = lim_attr
+
+            else:
+                print("Operator not supported!")
+                all_recs = []
+
+    return all_recs
 
 
 
@@ -65,6 +893,12 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
     '''
     This method outputs the result of the query
     '''
+
+    # Handling empty output
+    if len(all_recs) == 0:
+        print("No records found for the given criterion!")
+        return
+
     # Handling select all records
     if len(attrs_to_print)==1 and attrs_to_print[0] == '*':
         if(tableno == 1):
@@ -98,6 +932,8 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
             for attrs in table1_attr:
                 print("table1.",attrs,sep='',end=', ')
             for attrs in table2_attr:
+                if (nj_cond == True or nj_cond2 == True or nj_cond3 == True or nj_cond4 == True) and attrs == "B":
+                    continue
                 if attrs == table2_attr[-1]:
                     print("table2.",attrs,sep='',end='\n')
                 else:
@@ -307,10 +1143,14 @@ def Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_at
                         print("table2.",table2_attr[int(attrs)],sep='',end='\n')
                     else:
                         print("table2.",table2_attr[int(attrs)],sep='',end=', ')
-
                 for row in all_recs:
                     for attr in attrs_to_print:
+                        if (nj_cond == True or nj_cond2 == True or nj_cond3 == True or nj_cond4 == True):
+                            if attr > 3:
+                                attr -= 1
                         if attr == attrs_to_print[-1]:
+                            print(row[attr], sep='',end='\n')
+                        elif (nj_cond == True or nj_cond2 == True or nj_cond3 == True or nj_cond4 == True) and attr == attrs_to_print[-1] -1 :
                             print(row[attr], sep='',end='\n')
                         else:
                             print(row[attr], sep='',end=', ')
@@ -357,7 +1197,7 @@ def Process_Query(attrs, tables, conditions, table1_attr, table1_recs, table2_at
                 attrs_to_print.append(data_dict[attrs[0]])
     else:
         for attr in attrs:
-            print(attr)
+            # print(attr)
             if attr not in data_dict:
                 print("Error! Attribute \"", attr, "\" not present in Table...")
                 return
@@ -394,7 +1234,7 @@ def Process_Query(attrs, tables, conditions, table1_attr, table1_recs, table2_at
 
     # Handling conditions in query
     if len(conditions)!=0:
-        Parse_Conditions(conditions)
+        all_recs = Parse_Conditions(conditions, all_recs, tableno)
         # TODO: Modify records to be printed based on condition
     
     Print_Output(attrs_to_print, all_recs, aggr, tableno, table1_attr, table2_attr)
